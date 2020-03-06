@@ -3,38 +3,24 @@
     <div class="search_input">
       <div class="search_input_wrapper">
         <i class="iconfont icon-sousuo"></i>
-        <input type="text" />
+        <input type="text" v-model="message" />
       </div>
     </div>
     <div class="search_result">
       <h3>电影/电视剧/综艺</h3>
       <ul>
-        <li>
+        <li v-for="(item,index) in movieList" :key="index">
           <div class="img">
-            <img src="/images/movie_1.jpg" />
+            <img :src="item.img | setWH('128.180')" />
           </div>
           <div class="info">
             <p>
-              <span>无名之辈</span>
-              <span>8.5</span>
+              <span>{{item.nm}}</span>
+              <span>{{item.sc}}</span>
             </p>
-            <p>A Cool Fish</p>
-            <p>剧情,喜剧,犯罪</p>
-            <p>2018-11-16</p>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="/images/movie_1.jpg" />
-          </div>
-          <div class="info">
-            <p>
-              <span>无名之辈</span>
-              <span>8.5</span>
-            </p>
-            <p>A Cool Fish</p>
-            <p>剧情,喜剧,犯罪</p>
-            <p>2018-11-16</p>
+            <p>{{item.enm}}</p>
+            <p>{{item.cat}}</p>
+            <p>{{item.rt}}</p>
           </div>
         </li>
       </ul>
@@ -44,7 +30,45 @@
 
 <script>
 export default {
-    name: 'Search'
+  name: "Search",
+  data() {
+    return {
+      message: "",
+      movieList: []
+    };
+  },
+  methods: {
+    // 节流防抖
+    cancelRequest() {
+      if (typeof this.source === "function") {
+        this.source("终止请求");
+      }
+    }
+  },
+  watch: {
+    async message(newVal) {
+      this.cancelRequest();
+      try {
+        const { data: res } = await this.axios.get(
+          "/api/searchList?cityId=10&kw=" + newVal,
+          {
+            cancelToken: new this.axios.CancelToken(c => {
+              this.source = c;
+            })
+          }
+        );
+
+        const msg = res.msg;
+        const movies = res.data.movies;
+        // console.log(res);
+        if (msg && movies) {
+          this.movieList = res.data.movies.list;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }
 };
 </script>
 
