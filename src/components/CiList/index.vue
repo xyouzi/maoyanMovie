@@ -1,22 +1,31 @@
 <template>
   <div class="cinema_body">
-    <ul>
-      <li v-for="(item,index) in cinemaList" :key="index">
-        <div>
-          <span>{{item.nm}}</span>
-          <span class="q">
-            <span class="price">{{item.sellPrice}}</span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span>{{item.addr}}</span>
-          <span>{{item.distance}}</span>
-        </div>
-        <div class="card">
-          <div v-for="(num,key) in item.tag" v-if="num === 1" :key="key" :class="key | classCard">{{key | formatCard}}</div>
-        </div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading"></Loading>
+    <Scroller :handleToScroll="handleToScroll" :handleToTouchEnd="handleToTouchEnd">
+      <ul>
+        <li class="pullDown">{{pullDownMsg}}</li>
+        <li v-for="(item,index) in cinemaList" :key="index">
+          <div>
+            <span>{{item.nm}}</span>
+            <span class="q">
+              <span class="price">{{item.sellPrice}}</span> 元起
+            </span>
+          </div>
+          <div class="address">
+            <span>{{item.addr}}</span>
+            <span>{{item.distance}}</span>
+          </div>
+          <div class="card">
+            <div
+              v-for="(num,key) in item.tag"
+              v-if="num === 1"
+              :key="key"
+              :class="key | classCard"
+            >{{key | formatCard}}</div>
+          </div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -25,17 +34,47 @@ export default {
   name: "CiList",
   data() {
     return {
-      cinemaList: []
+      cinemaList: [],
+      pullDownMsg: "",
+      isLoading: true,
+      preCityId: -1
     };
   },
-  mounted() {
+  activated() {
     this.getCinemaList();
   },
   methods: {
     async getCinemaList() {
-      const { data: res } = await this.axios.get("/api/cinemaList?cityId=10");
+      const cityId = this.$store.state.city.Id;
+      if (this.preCityId === cityId) {
+        return;
+      }
+      this.isLoading = true;
+      const { data: res } = await this.axios.get(
+        "/api/cinemaList?cityId=" + cityId
+      );
       this.cinemaList = res.data.cinemas;
-      console.log(this.cinemaList);
+      this.isLoading = false;
+      this.preCityId = cityId;
+    },
+    handleToScroll(pos) {
+      if (pos.y > 30) {
+        this.pullDownMsg = "正在刷新";
+      }
+    },
+    handleToTouchEnd(pos) {
+      if (pos.y > 30) {
+        this.axios.get("/api/cinemaList?city=12").then(res => {
+          let msg = res.data.msg;
+          if (msg === "ok") {
+            this.pullDownMsg = "刷新完成";
+            setTimeout(() => {
+              this.movieList = res.data.data.movieList;
+              this.pullDownMsg = "";
+            }, 1000);
+          }
+        });
+      }
     }
   },
   filters: {
@@ -47,10 +86,10 @@ export default {
         { key: "snack", value: "小吃" }
       ];
       for (let i = 0; i < card.length; i++) {
-        if(card[i].key === key){
+        if (card[i].key === key) {
           return card[i].value;
         }
-      };
+      }
     },
     classCard(key) {
       const card = [
@@ -60,10 +99,10 @@ export default {
         { key: "snack", value: "bl" }
       ];
       for (let i = 0; i < card.length; i++) {
-        if(card[i].key === key){
+        if (card[i].key === key) {
           return card[i].value;
         }
-      };
+      }
     }
   }
 };
@@ -76,6 +115,13 @@ export default {
 }
 .cinema_body ul {
   padding: 20px;
+  .pullDown {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #3c9fe6;
+    text-align: center;
+  }
 }
 .cinema_body li {
   border-bottom: 1px solid #e6e6e6;

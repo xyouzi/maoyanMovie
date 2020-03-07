@@ -49,8 +49,9 @@ export default {
     async message(newVal) {
       this.cancelRequest();
       try {
+        const cityId = this.$store.state.city.id;
         const { data: res } = await this.axios.get(
-          "/api/searchList?cityId=10&kw=" + newVal,
+          "/api/searchList?cityId=" + cityId + "&kw=" + newVal,
           {
             cancelToken: new this.axios.CancelToken(c => {
               this.source = c;

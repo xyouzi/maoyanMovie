@@ -1,0 +1,90 @@
+<template>
+  <div class="wrap">
+    <div class="loading">
+      <div>
+        <span></span>
+      </div>
+      <div>
+        <span></span>
+      </div>
+      <div>
+        <span></span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "Loading"
+};
+</script>
+
+<style>
+.wrap{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.loading {
+  width: 60px;
+  height: 60px;
+  -webkit-animation: load 3s linear infinite;
+}
+.loading div {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+.loading span {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #99cc66;
+  position: absolute;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: -10px;
+  -webkit-animation: changeBgColor 3s ease infinite;
+}
+@-webkit-keyframes load {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  33.3% {
+    -webkit-transform: rotate(120deg);
+  }
+  66.6% {
+    -webkit-transform: rotate(240deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes changeBgColor {
+  0%,
+  100% {
+    background: #99cc66;
+  }
+  33.3% {
+    background: #ffff66;
+  }
+  66.6% {
+    background: #ff6666;
+  }
+}
+.loading div:nth-child(2) {
+  -webkit-transform: rotate(120deg);
+}
+.loading div:nth-child(3) {
+  -webkit-transform: rotate(240deg);
+}
+.loading div:nth-child(2) span {
+  -webkit-animation-delay: 1s;
+}
+.loading div:nth-child(3) span {
+  -webkit-animation-delay: 2s;
+}
+</style>

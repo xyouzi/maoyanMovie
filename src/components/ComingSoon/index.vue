@@ -1,21 +1,28 @@
 <template>
   <div class="movie_body">
-    <ul>
-      <li v-for="(item,index) in comingList" :key="index">
-        <div class="pic_show">
-          <img :src="item.img | setWH('128.180')" />
-        </div>
-        <div class="info_list">
-          <h2>{{item.nm}}<img v-if="item.version" src="@/assets/maxs.png"></h2>
-          <p>
-            <span class="person">{{item.wish}}</span> 人想看
-          </p>
-          <p>主演: {{item.star}}</p>
-          <p>{{item.rt}}上映</p>
-        </div>
-        <div class="btn_pre">预售</div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading"></Loading>
+    <Scroller v-else :handleToScroll="handleToScroll" :handleToTouchEnd="handleToTouchEnd">
+      <ul>
+        <li class="pullDown">{{pullDownMsg}}</li>
+        <li v-for="(item,index) in comingList" :key="index">
+          <div class="pic_show">
+            <img :src="item.img | setWH('128.180')" />
+          </div>
+          <div class="info_list">
+            <h2>
+              {{item.nm}}
+              <img v-if="item.version" src="@/assets/maxs.png" />
+            </h2>
+            <p>
+              <span class="person">{{item.wish}}</span> 人想看
+            </p>
+            <p>主演: {{item.star}}</p>
+            <p>{{item.rt}}上映</p>
+          </div>
+          <div class="btn_pre">预售</div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -24,20 +31,50 @@ export default {
   name: "comingSoon",
   data() {
     return {
-      comingList: []
-    }
+      comingList: [],
+      pullDownMsg: "",
+      isLoading: true,
+      // 未切换城市时的id
+      preCityId: -1
+    };
   },
-  mounted() {
+  activated() {
     this.getComingSoonList();
   },
   methods: {
     // 获取即将上映电影列表
     async getComingSoonList() {
-      const { data: res } = await this.axios.get('/api/movieComingList?cityId=10');
-      if(res.msg === 'ok') {
+      let cityId = this.$store.state.city.Id;
+      if(this.preCityId === cityId){return;}
+      this.isLoading = true;
+      const { data: res } = await this.axios.get(
+        "/api/movieComingList?cityId=" + cityId
+      );
+      if (res.msg === "ok") {
         this.comingList = res.data.comingList;
+        this.isLoading = false;
+        this.preCityId = cityId;
       }
       // console.log(this.comingList);
+    },
+    handleToScroll(pos) {
+      if (pos.y > 30) {
+        this.pullDownMsg = "正在刷新";
+      }
+    },
+    handleToTouchEnd(pos) {
+      if (pos.y > 30) {
+        this.axios.get("/api/movieComingList?cityId=12").then(res => {
+          let msg = res.data.msg;
+          if (msg === "ok") {
+            this.pullDownMsg = "刷新完成";
+            setTimeout(() => {
+              this.movieList = res.data.data.movieList;
+              this.pullDownMsg = "";
+            }, 1000);
+          }
+        });
+      }
     }
   }
 };
@@ -48,6 +85,13 @@ export default {
   flex: 1;
   overflow: auto;
   ul {
+    .pullDown {
+      margin: 0;
+      padding: 0;
+      border: none;
+      color: #3c9fe6;
+      justify-content: center;
+    }
     margin: 0 12px;
     overflow: hidden;
     li {

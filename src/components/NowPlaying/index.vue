@@ -1,49 +1,82 @@
 <template>
-  <div class="movie_body">
-    <ul>
-      <li v-for="(item,index) in movieList" :key="index">
-        <div class="pic_show">
-          <img :src="item.img | setWH('128.180')" />
-        </div>
-        <div class="info_list">
-          <h2>
-            {{item.nm}}
-            <img v-if="item.version" src="@/assets/maxs.png"  alt=""/>
-          </h2>
-          <p>
-            观众评
-            <span class="grade">{{item.sc}}</span>
-          </p>
-          <p>主演: {{item.star}}</p>
-          <p>{{item.showInfo}}</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-    </ul>
+  <div class="movie_body" ref="movie_body">
+    <Loading v-if="isLoading"></Loading>
+    <Scroller v-else :handleToScroll="handleToScroll" :handleToTouchEnd="handleToTouchEnd">
+      <ul>
+        <li class="pullDown">{{pullDownMsg}}</li>
+        <li v-for="(item,index) in movieList" :key="index">
+          <div class="pic_show">
+            <img :src="item.img | setWH('128.180')" />
+          </div>
+          <div class="info_list">
+            <h2>
+              {{item.nm}}
+              <img v-if="item.version" src="@/assets/maxs.png" alt />
+            </h2>
+            <p>
+              观众评
+              <span class="grade">{{item.sc}}</span>
+            </p>
+            <p>主演: {{item.star}}</p>
+            <p>{{item.showInfo}}</p>
+          </div>
+          <div class="btn_mall">购票</div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
 <script>
+// import BScroll from "better-scroll";
 export default {
   name: "NowPlaying",
   data() {
     return {
       // 电影列表数据
-      movieList: []
+      movieList: [],
+      pullDownMsg: "",
+      isLoading: true,
+      // 未切换城市时的id
+      preCityId: -1
     };
   },
-  mounted() {
+  activated() {
     this.getMovieList();
   },
   methods: {
     // 获取电影列表数据
     async getMovieList() {
+      const cityId = this.$store.state.city.Id;
+      if(this.preCityId === cityId){return;}
+      this.isLoading = true;
       const { data: res } = await this.axios.get(
-        "/api/movieOnInfoList?city=10"
+        "/api/movieOnInfoList?cityId=" + cityId
       );
-      // console.log(res);
-      this.movieList = res.data.movieList;
-      // console.log(this.movieList);
+      if (res.msg === "ok") {
+        this.movieList = res.data.movieList;
+        this.isLoading = false;
+        this.preCityId = cityId;
+      }
+    },
+    handleToScroll(pos) {
+      if (pos.y > 30) {
+        this.pullDownMsg = "正在刷新";
+      }
+    },
+    handleToTouchEnd(pos) {
+      if (pos.y > 30) {
+        this.axios.get("/api/movieOnInfoList?city=12").then(res => {
+          let msg = res.data.msg;
+          if (msg === "ok") {
+            this.pullDownMsg = "刷新完成";
+            setTimeout(() => {
+              this.movieList = res.data.data.movieList;
+              this.pullDownMsg = "";
+            }, 1000);
+          }
+        });
+      }
     }
   }
 };
@@ -53,6 +86,13 @@ export default {
 #content .movie_body {
   flex: 1;
   overflow: auto;
+  .pullDown {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #3c9fe6;
+    justify-content: center;
+  }
   ul {
     margin: 0 12px;
     overflow: hidden;
