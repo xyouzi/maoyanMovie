@@ -5,11 +5,11 @@
       <ul>
         <li class="pullDown">{{pullDownMsg}}</li>
         <li v-for="(item,index) in movieList" :key="index">
-          <div class="pic_show">
+          <div class="pic_show" @tap="handleToDetail(item.id)">
             <img :src="item.img | setWH('128.180')" />
           </div>
           <div class="info_list">
-            <h2>
+            <h2 @tap="handleToDetail">
               {{item.nm}}
               <img v-if="item.version" src="@/assets/maxs.png" alt />
             </h2>
@@ -77,6 +77,13 @@ export default {
           }
         });
       }
+    },
+    // 跳转详情页
+    handleToDetail(movieId) {
+      this.$router.push('/movie/detail/1/' + movieId).catch(err=>{
+        console.log('若无法跳转详情页，可能是该公共api调整了');
+        console.log(err);
+      });
     }
   }
 };
