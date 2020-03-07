@@ -1,4 +1,5 @@
 module.exports =  {
+    publicPath: '/maoyan',
     devServer: {
         proxy: {
             '/api': {

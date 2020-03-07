@@ -5,7 +5,7 @@
     </Header>
     <div id="content" class="contentDetail">
       <div class="detail_list">
-        <div class="detail_list_bg"></div>
+        <div class="detail_list_bg" :style="{'background-image':'url('+detailList.img.replace(/w\.h/,'148.208')+''}"></div>
         <div class="detail_list_filter"></div>
         <div class="detail_list_content">
           <div class="detail_list_img">
@@ -105,7 +105,7 @@ export default {
     .detail_list_bg {
       width: 100%;
       height: 100%;
-      background: url(/images/movie_1.jpg) 0 40%;
+    //   background: url(/images/movie_1.jpg) 0 40%;
       filter: blur(20px);
       background-size: cover;
       position: absolute;
@@ -158,25 +158,22 @@ export default {
       }
     }
   }
-}
-#content .detail_intro {
-  padding: 10px;
-}
-#content .detail_player {
-  margin: 20px;
-}
-.detail_player .swiper-slide {
-  width: 70px;
-  margin-right: 20px;
-  text-align: center;
-  font-size: 14px;
-}
-.detail_player .swiper-slide img {
-  width: 100%;
-  height:90px;
-  margin-bottom: 5px;
-}
-.detail_player .swiper-slide p:nth-of-type(2) {
-  color: #999;
+  #content .detail_intro {
+    padding: 10px;
+  }
+  #content .detail_player {
+    margin: 20px;
+    .swiper-slide {
+      width: 70px;
+      margin-right: 20px;
+      text-align: center;
+      font-size: 14px;
+      img {
+        width: 100%;
+        height: 88px;
+        margin-bottom: 5px;
+      }
+    }
+  }
 }
 </style>
